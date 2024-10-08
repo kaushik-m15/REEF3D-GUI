@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<base href="./">
+<!--CSS-->
+<link rel="stylesheet" type="text/css" href="./css/main.css">
+<link rel="stylesheet" type="text/css" href="./css/flex.css">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="ContentSecurityPolicy" content="default-src 'self'; script-src 'self'">
+    <title>REEF3D GUI 1.0 Alpha</title>
+
+<!--JS-->
+<script src="./js/stl_viewer/stl_viewer.min.js"></script>
+
+</head>
+
+<body>
+<div class="window">
+<div class="topBar">
+    <div class = "titleBar">
+        <img src="./assets/logo.ico" style="height:16px; width:16px; margin-right:10px; margin-left: 8px;" alt="" draggable="false">
+        <button id="toggleMenu" class="toggleMenuButton"></button>
+        <div class="title">
+                REEF3D GUI 1.0 Alpha
+        </div>
+    </div>
+    <div class = "decal">
+        <img src="" style="height:30px">
+    </div>
+</div>
+
+<div class="mainApp">
+    <!--Working directory-->
+    <div id="workingPathContainer" class="workingPathShow">
+    <button type="button" class="selectDir" id="selectDir">Select working directory...</button>
+    <div id="workingPath" class="showPath"></div>
+    </div>
+    <script src="./js/directoryOpen.js"></script>
+
+    <div class="hdSolver">
+        <select name="solverSelect" id="solverSelect" class="hdSolverSelect">
+            <option value="">Select hydrodynamic solver...</option>
+            <option value="CFD">CFD</option>
+            <option disabled style="color:lightcyan">Only CFD solver is available at the moment.</option>
+        </select>
+        <script>
+            const solverSelect = document.getElementById("solverSelect")
+            solverSelect.addEventListener("change", () => {
+            if (solverSelect.value === "CFD") {
+            solverSelect.style.backgroundColor = "#023E7D"
+            } else {
+            solverSelect.style.backgroundColor = "#7D8597" }})
+        </script>
+    </div>
+
+    <div class="domainSize">
+        <div class="domainHeading" id="domainHeading" style="width: 85px">
+            <img src="./assets/box.svg" style="width:25px; height:25px; padding-right: 4px;">
+            <div style="display: inline; position: absolute">Domain</div>
+        </div>
+        Size of domain (metres)
+        <input type="number" class="domainBox" id="domainx" name="domainx" placeholder="X">
+        <input type="number" class="domainBox" id="domainy" name="domainy" placeholder="Y">
+        <input type="number" class="domainBox" id="domainz" name="domainz" placeholder="Z">
+        <br>
+        <div style="padding-top: 5px;">Mesh size (metres)
+        <input type="number" class="domainBox" style="width:60px" id="meshsize" name="meshsize">
+        </div>
+        <script>
+            //Domain color changer
+            const domainHeading = document.getElementById("domainHeading")
+            const domainX = document.getElementById("domainx")
+            const domainY = document.getElementById("domainy")
+            const domainZ = document.getElementById("domainz")
+            const meshSize = document.getElementById("meshsize")
+            domainX.addEventListener("input", () => {updateViewport(); updateDomainHeader()})
+            domainY.addEventListener("input", () => {updateViewport(); updateDomainHeader()})
+            domainZ.addEventListener("input", () => {updateViewport(); updateDomainHeader()})
+            meshSize.addEventListener("input", updateDomainHeader)
+
+            function updateDomainHeader() {
+            if (domainX.value !== "" && domainY.value !== "" && domainZ.value !== "" && meshSize.value !== "") {
+                domainHeading.style.backgroundColor = "#023E7D"
+            } else { domainHeading.style.backgroundColor = "#5C677D"}
+            }
+        </script>
+    </div>
+    <br>
+    <div class="domainSize">
+        <div class="domainHeading" id="solidHeading" style="width:67px">
+            <img src="./assets/alt.-box.svg" style="width:25px; height:25px; padding-right: 4px;">
+            <div style="display: inline; position: absolute">Solid</div>
+        </div>
+
+        <div class="solidSelect">
+        <select name="solid" id="solid" class="selector">
+            <option value="">None</option>
+            <option value="cylinder">Cylinder</option>
+            <option value="cuboid">Cuboid</option>
+            <option value="sphere">Sphere</option>
+            <option value="stlfile">STL File</option>
+        </select>
+        <select name="solidaxis" id="solidaxis" class="selector" style="display:none; background-color:#0353A4;">
+            <option value="x">X-axis</option>
+            <option value="y">Y-axis</option>
+            <option value="z">Z-axis</option>
+        </select>
+        <button type="button" id="selectStl" class="stlButton" style="display:none"></button>
+        <div id="showStlPath" class="showStlPath"></div>
+        <div id="stlPosition" style="padding-top: 6px;">
+            Position
+            <input type="number" class="domainBox" id="stlX" style="width: 60px;" placeholder="X">
+            <input type="number" class="domainBox" id="stlY" style="width: 60px;" placeholder="Y">
+            <input type="number" class="domainBox" id="stlZ" style="width: 60px;" placeholder="Z">
+            <tab></tab>
+            &emsp; Rotation
+            <input type="number" class="domainBox" id="stlXrot" style="width: 60px;" placeholder="X">
+            <input type="number" class="domainBox" id="stlYrot" style="width: 60px;" placeholder="Y">
+            <input type="number" class="domainBox" id="stlZrot" style="width: 60px;" placeholder="Z">
+        </div>
+        </div>
+        <script src="./js/stlFileUpload.js"></script>
+        <script>
+            //Show STL upload button
+            const stlOption = document.getElementById("solid")
+            const stlButton = document.getElementById("selectStl")
+            const solidAxis = document.getElementById("solidaxis")
+            const solidHeading = document.getElementById("solidHeading")
+            const stlX = document.getElementById('stlX')
+            const stlY = document.getElementById('stlY')
+            const stlZ = document.getElementById('stlZ')
+            const stlXrot = document.getElementById('stlXrot')
+            const stlYrot = document.getElementById('stlYrot')
+            const stlZrot = document.getElementById('stlZrot')
+
+            stlOption.addEventListener("change", () => {
+                stlOption.blur()
+                if (stlOption.value == "stlfile") {
+                selectStl.innerHTML = "Select STL File..."
+                stlOption.style.backgroundColor = "#0353A4"
+                stlButton.style.display="inline"
+                solidAxis.style.display="none"
+                solidHeading.style.backgroundColor="#5C677D"
+                } else if (stlOption.value =="") {
+                solidAxis.style.display='none'
+                stlButton.style.display='none'
+                showStlPath.style.display='none'
+                stlOption.style.backgroundColor = "#979DAC"
+                solidHeading.style.backgroundColor = "#5C677D"
+                } else {
+                stlButton.style.display="none"
+                solidAxis.style.display='inline'
+                showStlPath.style.display='none'
+                stlOption.style.backgroundColor = "#0353A4"
+                solidHeading.style.backgroundColor = "#023E7D"
+                 }
+                }
+            )
+
+            solidAxis.addEventListener("change", () => {
+                solidAxis.blur()
+            })
+
+            stlX.addEventListener('input', updateViewport)
+            stlY.addEventListener('input', updateViewport)
+            stlZ.addEventListener('input', updateViewport)
+            stlXrot.addEventListener('input', updateViewport)
+            stlYrot.addEventListener('input', updateViewport)
+            stlZrot.addEventListener('input', updateViewport)
+        </script>
+    </div>
+
+    <div id="stlContainer" class="modelViewer"></div>
+
+    <button type="button" class="selectDir" id="savecontroltxt" style="margin: 10px 0px 10px">Save DIVEMesh input file</button>
+    <script src="./js/writecontroltxt.js"></script>
+
+    <div class="domainSize">
+        <div class="domainHeading" id="solidHeading" style="width: fit-content; padding-right: 10px;">
+            <img src="./assets/alt.-box.svg" style="width:25px; height:25px; padding-right: 4px;">
+            <div style="display: inline-block; vertical-align: top;">Boundary Conditions</div>
+        </div>
+        <div id="bc_grid" class="option_grid">
+        <label for="wall_functions" class="switch" style="width:133px">
+            <input id="wall_functions" type="checkbox" checked>
+            <div class="slider">Wall Functions</div>
+            <div id="switch_wall_functions" class="slider_ext">On</div>
+        </label>
+        <label for="slip_bc" class="switch" style="width: 133px">
+            <input id="slip_bc" type="checkbox">
+            <div class="slider">Slip Condition</div>
+            <div id="switch_slip_bc" class="slider_ext">On</div>
+        </label>
+        <label for="b23" class="switch" style="width: 203px">
+            <input id="b23" type="checkbox">
+            <div class="slider">Ghostcell Update</div>
+            <div id="switch_b23" class="slider_ext" style="padding-left: 110px;">Extrapolation</div>
+        </label>
+        <label for="b60" class="switch" style="width:90px">
+            <input id="b60" type="checkbox">
+            <div class="slider">ioFlow</div>
+            <div id="switch_b60" class="slider_ext" style="padding-left: 52px;">Off</div>
+        </label>
+        <label for="b90" class="switch" style="width:90px">
+            <input id="b90" type="checkbox">
+            <div class="slider">ioWave</div>
+            <div id="switch_b90" class="slider_ext" style="padding-left: 57px;">Off</div>
+        </label>
+        </div>
+    </div>
+    <br>
+    <div class="domainSize">
+        <div class="domainHeading" id="solidHeading" style="width: fit-content; padding-right: 10px;">
+            <img src="./assets/alt.-box.svg" style="width:25px; height:25px; padding-right: 4px;">
+            <div style="display: inline-block; vertical-align: top;">Initialization</div>
+        </div>
+        <div id="i_10_div" class="multi_toggle">
+            <select id="i_10" class="multi_selector">
+                <option value="0">Off</option>
+                <option value="1">On</option>
+                <option value="2">On with Free Surface</option>
+            </select>
+            <script type="module">
+                import toggleSelect from "./js/uiFunctions.js"
+                document.getElementById('i_10_div').addEventListener('click', () => {
+                    document.getElementById('i_10').value = toggleSelect('i_10', ['0', '1', '2'])
+                })
+            </script>
+        </div>
+    </div>
+    <div class="simulation_progress">
+        <button id="run_simulation" class="selectDir" style="margin:10px 0px 0px 0px">Run simulation</button>
+        <div class="sim_status" id="sim_errors"></div>
+        <div class="progress_bar" id="sim_progress">
+            <!--Write code for progress bar animation and implement taking the percentage value from runSimulation.js-->
+        </div>
+        <script src="./js/runSimulation.js" type="module"></script>
+        <div style="height: 30px"></div> <!--Extra bottom space-->
+    </div>
+</div>
+</div>
+</div>
+<script>
+    var stl_viewer = new StlViewer(document.getElementById('stlContainer'), {models:[{
+        id:0,
+        filename:"../../assets/unitcube.stl",
+        color: "#dbe2f2", opacity: 0.35,
+        }],
+    center_models: false,
+    camerax: -1,
+    cameray: -2,
+    auto_rotate: true,
+    })
+    
+    function defaultValue (number, def) {
+        if (isEmpty(number))
+        return def
+    }
+
+    function degreeConvert (radian) {
+        return radian*180/MATH.PI
+    }
+
+    function updateViewport() {
+        stl_viewer.remove_model(0)
+        stl_viewer.remove_model(1)
+        stl_viewer.add_model({
+            id:1,
+            filename: "../../assets/unitcube.stl",
+            scalex: domainX.value, scaley: domainY.value, scalez: domainZ.value,
+            color: "#dbe2f2", opacity: 0.35,
+            })
+        stl_viewer.add_model({
+            id:0,
+            filename: "../../solid.stl",
+            x: defaultValue(stlX.value, '0'), y: defaultValue(stlY.value, '0'), z: defaultValue(stlZ.value, '0'),
+            //rotationx: defaultValue(degreeConvert(stlXrot.value)),
+            //rotationy: defaultValue(degreeConvert(stlYrot.value)),
+            //rotationz: defaultValue(degreeConvert(stlZrot.value)),
+            color: "#7cb9f8"
+            })
+    }
+</script>
+</body>
+
+<!--JS UI-->
+<script src="./js/switchUI.js"></script>

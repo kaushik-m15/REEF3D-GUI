@@ -1,0 +1,14 @@
+{
+  "name": "reef3d-gui",
+  "version": "1.0.0",
+  "description": "A GUI application for REEF3D.",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "author": "Kaushik Majumdar",
+  "license": "GNU GPLv3",
+  "devDependencies": {
+    "electron": "^31.2.0"
+  }
+}
